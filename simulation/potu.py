@@ -1,11 +1,18 @@
 
 class POTU:
-    def __init__(self, packet_sizes, min_samples = 100, improvement_threshold = 0.005):
+    def __init__(self, packet_sizes, min_samples = 100, improvement_threshold = 0.005, 
+                 exploration_strategy = "interleaved"):
+
+        if exploration_strategy not in ["interleaved", "sequential"]:
+            raise ValueError("Invalid exploration strategy. Choose 'interleaved' or 'sequential'.")
+        
         self.packet_sizes = packet_sizes
         self.sent = {size: 0 for size in packet_sizes}
         self.lost = {size: 0 for size in packet_sizes}
         self.min_samples = min_samples
         self.improvement_threshold = improvement_threshold
+        self.exploration_strategy = exploration_strategy
+        self.exploration_index = 0
 
     def record_sent(self, packet_size, delivered):
         self.sent[packet_size] += 1
@@ -58,8 +65,26 @@ class POTU:
         return current_packet_size
 
     def next_exploration_packet_size(self):
-        for packet_size in self.packet_sizes:
+
+        if self.exploration_strategy == "sequential":
+            for packet_size in self.packet_sizes:
+                if not self.has_enough_samples(packet_size):
+                    return packet_size
+
+            return None
+
+        for _ in range(len(self.packet_sizes)):
+            packet_size = self.packet_sizes[self.exploration_index]
+            self.exploration_index = (self.exploration_index + 1) % len(self.packet_sizes)
+
             if not self.has_enough_samples(packet_size):
                 return packet_size
 
         return None
+
+    def reset_exploration(self):
+        self.sent = {packet_size: 0 for packet_size in self.packet_sizes}
+        self.lost = {packet_size: 0 for packet_size in self.packet_sizes}
+        self.exploration_index = 0
+
+    

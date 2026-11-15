@@ -57,20 +57,55 @@ class TestPOTU(unittest.TestCase):
 
     def test_next_exploration_packet_size(self):
 
-        self.assertEqual(self.potu.next_exploration_packet_size(), 1200)
+        expected_order = [1200, 1300, 1400, 1492, 1500]
 
         for _ in range(100):
-            self.potu.record_sent(1200, True)
-
-        self.assertEqual(self.potu.next_exploration_packet_size(), 1300)
-
-        for packet_size in [1300, 1400, 1492, 1500]:
-            for _ in range(100):
+            for packet_size in expected_order:
+                self.assertEqual(self.potu.next_exploration_packet_size(), packet_size)
                 self.potu.record_sent(packet_size, True)
 
         self.assertIsNone(self.potu.next_exploration_packet_size())
 
+    def test_sequential_exploration(self):
+        potu = POTU(
+            [1200, 1300, 1400, 1492, 1500],
+            min_samples=100,
+            improvement_threshold=0.005,
+            exploration_strategy="sequential"
+        )
 
+        for packet_size in potu.packet_sizes:
+            for _ in range(100):
+                self.assertEqual(potu.next_exploration_packet_size(), packet_size)
+                potu.record_sent(packet_size, True)
+
+        self.assertIsNone(potu.next_exploration_packet_size())
+
+    def test_invalid_exploration_strategy(self):
+        with self.assertRaises(ValueError):
+            POTU(
+                [1200, 1300, 1400, 1492, 1500],
+                min_samples=100,
+                improvement_threshold=0.005,
+                exploration_strategy="invalid_strategy"
+            )
+
+    def test_reset_exploration(self):
+        self.potu.record_sent(1500, True)
+        self.potu.record_sent(1500, False)
+
+        self.potu.reset_exploration()
+
+        self.assertEqual(self.potu.sent[1500], 0)
+        self.assertEqual(self.potu.lost[1500], 0)
+        self.assertEqual(self.potu.exploration_index, 0)
+
+        self.assertEqual(
+            self.potu.next_exploration_packet_size(),
+            1200
+        )
+
+    
 
 if __name__ == "__main__":
     unittest.main()

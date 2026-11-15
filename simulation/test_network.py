@@ -61,6 +61,56 @@ class TestNetwork(unittest.TestCase):
             delta=0.01
         )
 
+    def test_packet_count(self):
+        self.assertEqual(self.network.packet_count, 0)
+
+        self.network.transmit(1200)
+        self.assertEqual(self.network.packet_count, 1)
+
+        self.network.transmit(1300)
+        self.assertEqual(self.network.packet_count, 2)
+
+    def test_congestion_phase(self):
+        network = Network(
+            self.loss_probabilities,
+            10_000_000,
+            50,
+            congestion_interval=100,
+            congestion_loss=0.5
+        )
+
+        self.assertFalse(network.is_congested())
+
+        for _ in range(100):
+            network.transmit(1200)
+
+        self.assertTrue(network.is_congested())
+
+        for _ in range(100):
+            network.transmit(1200)
+
+        self.assertFalse(network.is_congested())
+
+    def test_update_loss_probabilities(self):
+        new_loss_probabilities = {
+            1200: 0.01,
+            1300: 0.02,
+            1400: 0.03,
+            1492: 0.04,
+            1500: 0.05
+        }
+
+        self.network.update_loss_probabilities(new_loss_probabilities)
+
+        self.assertEqual(
+            self.network.loss_probabilities,
+            new_loss_probabilities
+        )
+
+        self.assertAlmostEqual(
+            self.network.expected_goodput(1500),
+            10_000_000 * (1450 / 1500) * (1 - 0.05)
+        )
 
 if __name__ == "__main__":
     unittest.main()

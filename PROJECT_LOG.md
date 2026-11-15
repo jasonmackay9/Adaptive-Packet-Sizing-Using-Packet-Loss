@@ -42,7 +42,7 @@ Conducted experiments using a randomly generated packet-loss profile across 100 
 
 Implemented and compared two exploration strategies: sequential exploration, which tests each packet size before moving to the next, and interleaved exploration, which alternates between candidate packet sizes.
 
-Investigated whether interleaving exploration could reduce the influence of changing congestion conditions on packet-loss estimates. Across different congestion intervals, neither exploration strategy consistently outperformed the other.
+Investigated whether interleaved exploration could reduce the influence of changing congestion conditions on packet-loss estimates. Initial experiments suggested that neither strategy consistently outperformed the other, although the exact experimental configuration used to produce some of the original regret values was not preserved. These results were therefore revisited in a subsequent experiment to establish a reproducible comparison.
 
 Also investigated how the number of exploration samples affects packet-size selection. Generally, increasing the number of samples reduced selection regret, although improvements were not consistent across every configuration.
 
@@ -63,3 +63,21 @@ These results suggest that POTU can consistently adjust its packet-size selectio
 Implemented and successfully passed additional unit tests verifying that the network's loss probabilities can be updated and that POTU's exploration observations can be reset correctly.
 
 Identified several areas for future work, including automatically triggering re-exploration, evaluating adaptation overhead, and measuring overall goodput when network conditions change.
+
+## Entry 6 - Additional Experiments, Visualization, and Midterm Project Update - Mid November
+
+Extended the experimental evaluation by conducting 1,000 trials using independently generated packet-loss profiles, with both 100 and 1,000 exploration samples per candidate packet size.
+
+With 100 samples per candidate, POTU achieved an average steady-state goodput improvement of 0.80% and an average overall improvement of 0.79% compared with the fixed 1500-byte baseline. Increasing exploration to 1,000 samples improved these results to 1.08% and 0.93%, respectively. This demonstrated that additional exploration can improve packet-size selection accuracy, although it also increases exploration overhead.
+
+Added Python plotting scripts to visualize the experimental results, including theoretical expected goodput for different packet sizes, distributions of goodput improvement across randomly generated loss profiles, and average goodput regret for sequential and interleaved exploration.
+
+Revisited the earlier exploration-strategy experiment after discovering that its original regret values could not be reproduced using the parameters in the new plotting script. The precise cause of the discrepancy was not established, as the original experimental configuration was not fully documented. Rather than relying on those earlier values, a new set of experiments was conducted using explicitly defined parameters.
+
+The updated exploration experiments evaluated congestion intervals of 50, 100, and 500 transmissions, with an additional 5-percentage-point packet-loss probability during congested periods. Sequential and interleaved exploration were compared using 50, 100, 250, 500, and 1,000 samples per candidate packet size, with 100 trials per configuration.
+
+Across the 15 configurations, interleaved exploration achieved lower average goodput regret in 10 cases, while sequential exploration performed better in 5. Both strategies generally achieved lower regret as the number of exploration samples increased. These results suggest that exploration timing and congestion conditions influence the relative performance of each strategy, rather than either strategy being consistently superior.
+
+Updated the experimental analysis to use the new results and generated a comparison graph for the 500-transmission congestion interval, illustrating how the relative performance of the two strategies changes with exploration sample size.
+
+Completed the midterm project update, documenting POTU's implementation, experimental methodology, results, limitations, and potential future improvements. The report also establishes a foundation for the final project report and presentation.

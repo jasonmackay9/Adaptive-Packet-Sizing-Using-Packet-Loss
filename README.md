@@ -15,6 +15,7 @@ QUIC and DPLPMTUD provide the motivation for this project, but the current scope
 ## Project Structure
 
 ```text
+
 Adaptive-Packet-Sizing-Using-Packet-Loss/
 ├── .vscode/
 │   └── settings.json
@@ -24,9 +25,20 @@ Adaptive-Packet-Sizing-Using-Packet-Loss/
 │   ├── run_simulation.py
 │   ├── test_network.py
 │   └── test_potu.py
+├── experiments/
+│   ├── results/
+│   │   ├── random_profiles.csv
+│   ├── figures/
+│   │   ├── exploration_regret.png
+│   │   ├── exploration_goodput.png
+│   │   └── random_profiles_histogram.png
+│   ├── plot_exploration.py
+│   ├── random_profiles.py
+│   └── plot_goodput.py
 ├── .gitignore
 ├── PROJECT_LOG.md
 └── README.md
+
 ```
 
 ### Simulation Files
@@ -40,6 +52,14 @@ Adaptive-Packet-Sizing-Using-Packet-Loss/
 | `test_potu.py` | Contains unit tests for POTU's behaviour. |
 
 The `.vscode/` directory contains workspace-specific VS Code settings, while `.gitignore` specifies files that Git should exclude from version control.
+
+### Experimental Results and Visualizations
+
+The `experiments/` directory contains Python scripts used to conduct additional experiments and generate figures for the project's evaluation. These include theoretical expected-goodput comparisons, experiments using randomly generated packet-loss profiles, and comparisons of sequential and interleaved exploration strategies.
+
+The `results/` subdirectory stores experimental data in CSV format, while the `figures/` subdirectory contains generated plots used in the midterm project update and future project deliverables.
+
+The plotting scripts use Matplotlib, which must be installed separately. The core simulation and unit tests use Python's standard library.
 
 ## Current Simulation
 
@@ -70,7 +90,7 @@ These packet-loss probabilities are hypothetical and are used to investigate sce
 
 ## Running the Simulation
 
-The simulation uses Python and does not currently require any third-party Python packages.
+The core simulation uses Python's standard library. Generating experimental figures additionally requires Matplotlib.
 
 From the repository's root directory, run:
 
@@ -96,9 +116,9 @@ Although the theoretical optimal packet size under the initial loss probabilitie
 
 These results are preliminary and apply only to the assumed network conditions.
 
-Additional experiments were conducted using randomly generated packet-loss probabilities. Across 100 trials using one randomly generated loss profile, POTU achieved an average goodput improvement of approximately **0.59%** compared with the fixed maximum-size baseline.
+Additional experiments evaluated POTU across 1,000 independently generated packet-loss profiles. With 100 exploration samples per candidate packet size, POTU achieved an average steady-state goodput improvement of 0.80% and an average overall improvement of 0.79%. Increasing exploration to 1,000 samples improved these results to 1.08% and 0.93%, respectively.
 
-Sequential and interleaved exploration strategies were also compared under simulated periods of congestion. Neither strategy consistently outperformed the other across the tested conditions. Increasing the number of exploration samples generally improved the reliability of packet-size selection, although the results varied between configurations.
+Sequential and interleaved exploration strategies were compared under congestion intervals of 50, 100, and 500 transmissions, using an additional 5-percentage-point packet-loss probability during congested periods. Across 15 configurations, interleaved exploration achieved lower average goodput regret in 10 cases, while sequential exploration performed better in five. Increasing the number of exploration samples generally reduced regret, although neither strategy consistently outperformed the other.
 
 To investigate adaptation to changing network conditions, a controlled path-change experiment was conducted across 1,000 random seeds. Following a change in packet-loss probabilities, POTU selected a smaller packet size in **987 of 1,000 trials (98.7%)** and selected the theoretical goodput-optimal size of 1300 bytes in **680 trials (68.0%)**.
 
